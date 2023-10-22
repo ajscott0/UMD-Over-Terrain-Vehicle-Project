@@ -1,12 +1,19 @@
 #include "Enes100.h"
 #include <stdio.h>
 
+const int trigPin = 9;  // Trigger pin
+const int trigPin = 10; // Echo pin
+
 void setup() {
     // Initialize Enes100 Library
     // Team Name, Mission Type, Marker ID, Wifi Module RX Pin, Wifi Module TX Pin
     Enes100.begin("Ban-anna Mike-anics", WATER, 19, 3, 2);
     // At this point we know we are connected.
     Enes100.println("Connected...");
+
+    Serial.begin(9600); // Initializing baud rate at 9600 bits/ssec. Replace with USD sensor's recieving rate.
+    pinMode(trigPin, OUTPUT);
+    pinMode(echoPin, INPUT);
 }
 
 void loop() {
@@ -29,10 +36,20 @@ void loop() {
         Enes100.print(",");
         Enes100.println(t);
     }
-    else { // otherwise
+    else {
         Enes100.println("Not visible"); // print not visible
     }
 
+    // USD sensor measuring code. Rewrite for each one? - something of the likes
+    digitalWrite(trigPin, LOW); // Pulsing trigger pin
+    delayMicroseconds(2);
+    digitalWrite(trigPin, HIGH);
+    delayMicroseconds(10);
+    digitalWrite(trigPin, LOW);
+
+    long duration = pulseIn(echoPin, HIGH); // Measure time taken for echo pin to go HIGH
+    int distance = (duration / 29) / 2  // Speed of sound = 29 microsec/cm. Divided by 2 b/c back and forth.
+    
     // Transmit the state of the pool
     Enes100.mission(WATER_TYPE, FRESH_POLLUTED);
     // Transmit the depth of the pool in mm (20, 30, or 40)
