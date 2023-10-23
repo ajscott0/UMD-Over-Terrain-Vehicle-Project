@@ -4,6 +4,9 @@
 const int trigPin = 9;  // Trigger pin
 const int trigPin = 10; // Echo pin
 
+const tdsPin = A0;  // TDS sensor pin
+const float referenceVoltage = 5.0;
+
 void setup() {
     // Initialize Enes100 Library
     // Team Name, Mission Type, Marker ID, Wifi Module RX Pin, Wifi Module TX Pin
@@ -11,7 +14,7 @@ void setup() {
     // At this point we know we are connected.
     Enes100.println("Connected...");
 
-    Serial.begin(9600); // Initializing baud rate at 9600 bits/ssec. Replace with USD sensor's recieving rate.
+    Serial.begin(9600); // Initializing baud rate at 9600 bits/ssec. Replace with USD sensor's recieving rate
     pinMode(trigPin, OUTPUT);
     pinMode(echoPin, INPUT);
 }
@@ -28,15 +31,13 @@ void loop() {
     t = Enes100.getTheta();  //Your theta! -pi to +pi, in radians, -1 if your aruco is not visible.
     v = Enes100.isVisible(); // Is your aruco visible? True or False.
 
-    if (v) // If the ArUco marker is visible
-    {
+    if (v) {  // If the ArUco marker is visible
         Enes100.print(x); // print out the location
         Enes100.print(",");
         Enes100.print(y);
         Enes100.print(",");
         Enes100.println(t);
-    }
-    else {
+    } else {
         Enes100.println("Not visible"); // print not visible
     }
 
@@ -49,6 +50,13 @@ void loop() {
 
     long duration = pulseIn(echoPin, HIGH); // Measure time taken for echo pin to go HIGH
     int distance = (duration / 29) / 2  // Speed of sound = 29 microsec/cm. Divided by 2 b/c back and forth.
+
+    // Code for recieving input from TDS sensor. Probably will go into some time of conditional to know when to run it.
+    float tdsAnalogInput = analogRead(tdsPin);
+    /* Normalize reading in Arduino analog value range: (0, 2^10) then convert into ppm.
+    Conversion may be unneccesary if our own understanding of possible resulting analog values can be determined. */
+    float tdsValue = (tdsAnalogInput / 1024.0) * referenceVoltage * 500.0;
+
     
     // Transmit the state of the pool
     Enes100.mission(WATER_TYPE, FRESH_POLLUTED);
