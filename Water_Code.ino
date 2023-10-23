@@ -2,7 +2,7 @@
 #include <stdio.h>
 
 const int trigPin = 9;  // Trigger pin
-const int trigPin = 10; // Echo pin
+const int echoPin = 10; // Echo pin
 
 const tdsPin = A0;  // TDS sensor pin
 const float referenceVoltage = 5.0;
