@@ -25,7 +25,7 @@ void left_turn();
 void right_turn();
 void stop();
 float tds_go();
-float tubidity_go()
+float turbidity_go()
 
 void setup() {
     // Initialize Enes100 Library
@@ -145,6 +145,6 @@ float tds_go() {
     return tdsValue;    // Maybe make this boolean value maybe? (salt or no)
 }
 
-float tubidity_go() {
+float turbidity_go() {
     // code here
 }
