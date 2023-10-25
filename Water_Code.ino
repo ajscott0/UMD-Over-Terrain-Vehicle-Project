@@ -76,7 +76,7 @@ void loop() {
     }
 
     // **Navigation Section**
-    if (distance < 20){    //Sense obstacle (20cm) *can change the distance to whatever*
+    if (distance_sensor < 20){    //Sense obstacle (20cm) *can change the distance to whatever*
         Serial.println("stop");
         stop(); // stop (3 seconds)
         //We can add a "while (sum > ___) here
