@@ -56,6 +56,7 @@ void loop() {
         Serial.println("stop");
         stop(); // stop (3 seconds)
         //We can add a "while (sum > ___) here
+        //Or just do while instead of if
     } else { //No obstacle in front
         Serial.println("forward");
         forward();
