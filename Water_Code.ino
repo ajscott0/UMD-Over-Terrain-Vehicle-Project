@@ -1,6 +1,7 @@
 #include "Enes100.h"
 #include <stdio.h>
 
+// Constant declarations (pins)
 const int left_motor1_pin1 = A1;
 const int left_motor1_pin2 = A2;
 const int left_motor2_pin1 = A3;
@@ -16,6 +17,15 @@ const int echoPin = 10; // Echo pin
 const tdsPin = A0;  // TDS sensor pin
 
 const float referenceVoltage = 5.0;
+
+// Function prototypes
+void forward();
+void backward();
+void left_turn();
+void right_turn();
+void stop();
+float tds_go();
+float tubidity_go()
 
 void setup() {
     // Initialize Enes100 Library
