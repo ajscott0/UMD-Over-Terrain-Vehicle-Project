@@ -12,7 +12,10 @@ const int right_motor2_pin1 = A7;
 const int right_motor2_pin2 = A8;
 
 const int trigPin = 9;  // Trigger pin
-const int echoPin = 10; // Echo pin 
+const int echoPin = 10; // Echo pin
+
+const int BtrigPin = 11;  // Trigger pin of USD sensor 2
+const int BechoPin = 12;  // Echo pin of USD sensor 2
 
 const tdsPin = A0;  // TDS sensor pin
 
@@ -24,8 +27,9 @@ void backward();
 void left_turn();
 void right_turn();
 void stop();
+float distance_sensor(int trigPin, int echoPin);
 float tds_go();
-float turbidity_go()
+float turbidity_go();
 
 void setup() {
     // Initialize Enes100 Library
@@ -34,8 +38,10 @@ void setup() {
     // At this point we know we are connected.
     Enes100.println("Connected...");
 
-    pinMode(trigPin, OUTPUT);
-    pinMode(echoPin, INPUT);
+    pinMode(AtrigPin, OUTPUT);
+    pinMode(AechoPin, INPUT);
+    pinMode(BtrigPin, OUTPUT);
+    pinMode(BechoPin, INPUT);
 
     pinMode(tdsPin, INPUT);
 
@@ -68,16 +74,6 @@ void loop() {
     } else {
         Enes100.println("Not visible"); // print not visible
     }
-
-    // USD sensor measuring code. Rewrite for each one? - something of the likes
-    digitalWrite(trigPin, LOW); // Pulsing trigger pin
-    delayMicroseconds(2);
-    digitalWrite(trigPin, HIGH);
-    delayMicroseconds(10);
-    digitalWrite(trigPin, LOW);
-
-    long duration = pulseIn(echoPin, HIGH); // Measure time taken for echo pin to go HIGH
-    int distance = (duration / 29) / 2  // Speed of sound = 29 microsec/cm. Divided by 2 b/c back and forth.
 
     // **Navigation Section**
     if (distance < 20){    //Sense obstacle (20cm) *can change the distance to whatever*
@@ -134,6 +130,20 @@ void stop() {
     analogWrite(right_motor1_pin2, 0);
     analogWrite(right_motor2_pin1, 0);
     analogWrite(right_motor2_pin2, 0);
+}
+
+float distance_sensor(int trigPin, int echoPin) {
+    // USD sensor measuring code. Rewrite for each one? - something of the likes
+    digitalWrite(trigPin, LOW); // Pulsing trigger pin
+    delayMicroseconds(2);
+    digitalWrite(trigPin, HIGH);
+    delayMicroseconds(10);
+    digitalWrite(trigPin, LOW);
+
+    long duration = pulseIn(echoPin, HIGH); // Measure time taken for echo pin to go HIGH
+    int distance = (duration / 29) / 2  // Speed of sound = 29 microsec/cm. Divided by 2 b/c back and forth.
+
+    return distance;
 }
 
 float tds_go() {
