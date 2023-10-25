@@ -1,15 +1,20 @@
 #include "Enes100.h"
 #include <stdio.h>
 
-const int left_driver_pin1 = A1;
-const int left_driver_pin2 = A2;
-const int right_driver_pin1 = A3;
-const int right_driver_pin2 = A4;
+const int left_motor1_pin1 = A1;
+const int left_motor1_pin2 = A2;
+const int left_motor2_pin1 = A3;
+const int left_motor2_pin2 = A4;
+const int right_motor1_pin1 = A5;
+const int right_motor1_pin2 = A6;
+const int right_motor2_pin1 = A7;
+const int right_motor2_pin2 = A8;
 
 const int trigPin = 9;  // Trigger pin
-const int echoPin = 10; // Echo pin
+const int echoPin = 10; // Echo pin 
 
 const tdsPin = A0;  // TDS sensor pin
+
 const float referenceVoltage = 5.0;
 
 void setup() {
@@ -19,15 +24,17 @@ void setup() {
     // At this point we know we are connected.
     Enes100.println("Connected...");
 
-    Serial.begin(9600); // Initializing baud rate at 9600 bits/ssec. Replace with USD sensor's recieving rate
     pinMode(trigPin, OUTPUT);
     pinMode(echoPin, INPUT);
+
+    pinMode(tdsPin, INPUT);
 
     pinMode(right_driver_pin1, OUTPUT);
     pinMode(right_driver_pin2, OUTPUT);
     pinMode(left_driver_pin1, OUTPUT);
     pinMode(back_driver_pin2, OUTPUT);
 
+    Serial.begin(9600); // Initializing baud rate at 9600 bits/ssec. Replace with USD sensor's recieving rate
 }
 
 void loop() {
@@ -85,34 +92,38 @@ void loop() {
 }
 
 void forward() {
-    digitalWrite(LEFT_A1, HIGH);
-    digitalWrite(LEFT_B1, LOW);
-    digitalWrite(RIGHT_A2, HIGH);
-    digitalWrite(RIGHT_B2, LOW);
+    analogWrite(left_motor1_pin1, 200);
+    analogWrite(left_motor2_pin1, 200);
+    analogWrite(right_motor1_pin1, 200);
+    analogWrite(right_motor2_pin1, 200);
 }
 void backward() {
-    digitalWrite(LEFT_A1, LOW);
-    digitalWrite(LEFT_B1, HIGH);
-    digitalWrite(RIGHT_A2, LOW);
-    digitalWrite(RIGHT_B2, HIGH);
+    analogWrite(left_motor1_pin2, 200);
+    analogWrite(left_motor2_pin2, 200);
+    analogWrite(right_motor1_pin2, 200);
+    analogWrite(right_motor2_pin2, 200);
 }
 void left_turn() {
-    digitalWrite(LEFT_A1, LOW);
-    digitalWrite(LEFT_B1, HIGH);
-    digitalWrite(RIGHT_A2, HIGH);
-    digitalWrite(RIGHT_B2, LOW);
+    analogWrite(left_motor1_pin2, 200);
+    analogWrite(left_motor2_pin2, 200);
+    analogWrite(right_motor1_pin1, 200);
+    analogWrite(right_motor2_pin1, 200);
 }
 void right_turn() {
-    digitalWrite(LEFT_A1, HIGH);
-    digitalWrite(LEFT_B1, LOW);
-    digitalWrite(RIGHT_A2, LOW);
-    digitalWrite(RIGHT_B2, HIGH);
+    analogWrite(left_motor1_pin1, 200);
+    analogWrite(left_motor2_pin1, 200);
+    analogWrite(right_motor1_pin2, 200);
+    analogWrite(right_motor2_pin2, 200);
 }
 void stop() {
-    digitalWrite(LEFT_A1, LOW);
-    digitalWrite(LEFT_B1, LOW);
-    digitalWrite(RIGHT_A2, LOW);
-    digitalWrite(RIGHT_B2, LOW);
+    analogWrite(left_motor1_pin1, 0);
+    analogWrite(left_motor1_pin2, 0);
+    analogWrite(left_motor2_pin1, 0);
+    analogWrite(left_motor2_pin2, 0);
+    analogWrite(right_motor1_pin1, 0);
+    analogWrite(right_motor1_pin2, 0);
+    analogWrite(right_motor2_pin1, 0);
+    analogWrite(right_motor2_pin2, 0);
 }
 
 float tds_go() {
@@ -121,7 +132,7 @@ float tds_go() {
     Conversion may be unneccesary if our own understanding of possible resulting analog values can be determined. */
     float tdsValue = (tdsAnalogInput / 1024.0) * referenceVoltage * 500.0;
 
-    return tdsValue;    // Maybe make this boolean value (salt or no)
+    return tdsValue;    // Maybe make this boolean value maybe? (salt or no)
 }
 
 float tubidity_go() {
