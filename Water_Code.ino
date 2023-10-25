@@ -1,6 +1,11 @@
 #include "Enes100.h"
 #include <stdio.h>
 
+const int LEFT_A1 = 4; //Back left motor *can change, just an example*
+const int LEFT_B1 = 5; //Front left motor *can change, just an example*
+const int RIGHT_A2 = 6; //Back right motor *can change, just an example*
+const int RIGHT_B2 = 7; //Front right motor *can change, just an example*
+
 const int trigPin = 9;  // Trigger pin
 const int echoPin = 10; // Echo pin
 
@@ -17,6 +22,12 @@ void setup() {
     Serial.begin(9600); // Initializing baud rate at 9600 bits/ssec. Replace with USD sensor's recieving rate
     pinMode(trigPin, OUTPUT);
     pinMode(echoPin, INPUT);
+
+    pinMode(LEFT_A1, OUTPUT);
+    pinMode(RIGHT_A2, OUTPUT);
+    pinMode(LEFT_B1, OUTPUT);
+    pinMode(RIGHT_B2, OUTPUT);
+
 }
 
 void loop() {
@@ -30,6 +41,25 @@ void loop() {
     y = Enes100.getY();  // Your Y coordinate! 0-2, in meters, also -1 if your aruco is not visible.
     t = Enes100.getTheta();  //Your theta! -pi to +pi, in radians, -1 if your aruco is not visible.
     v = Enes100.isVisible(); // Is your aruco visible? True or False.
+
+    float duration,distance;
+    digitalWrite(trigPin, HIGH);
+    delay(10);
+    digitalWrite(trigPin, LOW);
+
+    duration=pulseIn(echoPin, HIGH);
+    distance=((float)(340 * duration) / 10000) / 2; //Calulation to set distance to cm
+    Serial.print("\nDistance : ");
+    Serial.println(distance);
+
+    if(distance < 20){ //Sense obstacle (20cm) *can change the distance to whatever*
+        Serial.println("stop");
+        stop(); // stop (3 seconds)
+        //We can add a "while (sum > ___) here
+    } else { //No obstacle in front
+        Serial.println("forward");
+        forward();
+    }
 
     if (v) {  // If the ArUco marker is visible
         Enes100.print(x); // print out the location
@@ -63,4 +93,36 @@ void loop() {
     // Transmit the depth of the pool in mm (20, 30, or 40)
     Enes100.mission(DEPTH, 30);
     delay(1000);
+}
+void forward(){
+    digitalWrite(LEFT_A1, HIGH);
+    digitalWrite(LEFT_B1, LOW);
+    digitalWrite(RIGHT_A2, HIGH);
+    digitalWrite(RIGHT_B2, LOW);
+}
+}
+void backward(){
+    digitalWrite(LEFT_A1, LOW);
+    digitalWrite(LEFT_B1, HIGH);
+    digitalWrite(RIGHT_A2, LOW);
+    digitalWrite(RIGHT_B2, HIGH);
+}
+void left(){
+    digitalWrite(LEFT_A1, LOW);
+    digitalWrite(LEFT_B1, HIGH);
+    digitalWrite(RIGHT_A2, HIGH);
+    digitalWrite(RIGHT_B2, LOW);
+}
+void right(){
+    digitalWrite(LEFT_A1, HIGH);
+    digitalWrite(LEFT_B1, LOW);
+    digitalWrite(RIGHT_A2, LOW);
+    digitalWrite(RIGHT_B2, HIGH);
+}
+void stop(){
+    digitalWrite(LEFT_A1, LOW);
+    digitalWrite(LEFT_B1, LOW);
+    digitalWrite(RIGHT_A2, LOW);
+    digitalWrite(RIGHT_B2, LOW);
+    delay(3000);
 }
