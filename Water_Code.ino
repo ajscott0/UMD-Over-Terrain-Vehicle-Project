@@ -11,13 +11,15 @@ const int right_motor1_pin2 = A6;
 const int right_motor2_pin1 = A7;
 const int right_motor2_pin2 = A8;
 
-const int trigPin = 9;  // Trigger pin
-const int echoPin = 10; // Echo pin
+const int AtrigPin = 9;  // Trigger pin
+const int AechoPin = 10; // Echo pin
 
 const int BtrigPin = 11;  // Trigger pin of USD sensor 2
 const int BechoPin = 12;  // Echo pin of USD sensor 2
 
 const tdsPin = A0;  // TDS sensor pin
+
+const int turbidityPin = A9;  // Turbidity sensor pin
 
 const float referenceVoltage = 5.0;
 
@@ -149,12 +151,14 @@ float distance_sensor(int trigPin, int echoPin) {
 float tds_go() {
     float tdsAnalogInput = analogRead(tdsPin);
     /* Normalize reading in Arduino analog value range: (0, 2^10) then convert into ppm.
-    Conversion may be unneccesary if our own understanding of possible resulting analog values can be determined. */
+    This mapping may be unneccesary if our own understanding of possible resulting analog values can be determined. */
     float tdsValue = (tdsAnalogInput / 1024.0) * referenceVoltage * 500.0;
 
     return tdsValue;    // Maybe make this boolean value maybe? (salt or no)
 }
 
 float turbidity_go() {
-    // code here
+    float turbidityValue = analogRead(turbidityPin);  // Maybe will need to map turbidityValue to a meaningful range
+
+    return turbidityValue;
 }
