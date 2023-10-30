@@ -1,6 +1,6 @@
 #include "Enes100.h"
 
-const tdsPin = A0;  // TDS sensor pin
+const int tdsPin = A0;  // TDS sensor pin
 float referenceVoltage = 5.0;
 
 float tds_go(); // Function prototype
@@ -14,8 +14,16 @@ void setup() {
 void loop() {
   float tdsValue = tds_go();
 
-  Enes100.print("TDS sensor reading: ");
-  Enes100.print(tdsValue);
+  if (tdsValue <= 450) {
+    Serial.println("Water is fresh");
+    Serial.println("Analog reading: ");
+    Serial.println(tdsValue);
+  } else {
+    Serial.println("Water is salty");
+    Serial.println("Analog reading: ");
+    Serial.println(tdsValue);
+  }
+  delay(2000);
 }
 
 float tds_go() {
