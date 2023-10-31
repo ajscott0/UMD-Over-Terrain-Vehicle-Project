@@ -13,7 +13,7 @@ void setup() {
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:   
+  // Simple testing code to see if it works  
   forward();
   delay(1000);
   stop();
