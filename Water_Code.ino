@@ -1,27 +1,30 @@
 #include "Enes100.h"
-#include <stdio.h>
 
-// Constant declarations (pins)
-const int left_motor1_pin1 = A1;
-const int left_motor1_pin2 = A2;
-const int left_motor2_pin1 = A3;
-const int left_motor2_pin2 = A4;
-const int right_motor1_pin1 = A5;
-const int right_motor1_pin2 = A6;
-const int right_motor2_pin1 = A7;
-const int right_motor2_pin2 = A8;
+// Motor driver pins
+const int rightFrontPin1 = 2;
+const int rightFrontPin2 = 3;
+const int rightRearPin1 = 4;
+const int rightRearPin2 = 5;
 
+const int leftFrontPin1 = 6;
+const int leftFrontPin2 = 7;
+const int leftRearPin1 = 8;
+const int leftRearPin2 = 9;
+
+// Distance sensor pins
 const int AtrigPin = 9;  // Trigger pin
 const int AechoPin = 10; // Echo pin
 
 const int BtrigPin = 11;  // Trigger pin of USD sensor 2
 const int BechoPin = 12;  // Echo pin of USD sensor 2
 
+// Mission sensor pins
 const tdsPin = A0;  // TDS sensor pin
-
 const int turbidityPin = A9;  // Turbidity sensor pin
 
+// Other constant declarations
 const float referenceVoltage = 5.0;
+
 
 // Function prototypes
 void forward();
@@ -30,14 +33,12 @@ void left_turn();
 void right_turn();
 void stop();
 float distance_sensor(int trigPin, int echoPin);
-float tds_go();
-float turbidity_go();
+void tds_go();
+void turbidity_go();
 
 void setup() {
-    // Initialize Enes100 Library
     // Team Name, Mission Type, Marker ID, Wifi Module RX Pin, Wifi Module TX Pin
     Enes100.begin("Ban-anna Mike-anics", WATER, 19, 3, 2);
-    // At this point we know we are connected.
     Enes100.println("Connected...");
 
     pinMode(AtrigPin, OUTPUT);
@@ -47,25 +48,27 @@ void setup() {
 
     pinMode(tdsPin, INPUT);
 
-    pinMode(right_driver_pin1, OUTPUT);
-    pinMode(right_driver_pin2, OUTPUT);
-    pinMode(left_driver_pin1, OUTPUT);
-    pinMode(back_driver_pin2, OUTPUT);
+    pinMode(rightFrontPin1, OUTPUT);
+    pinMode(rightFrontPin2, OUTPUT);
+    pinMode(rightRearPin1, OUTPUT);
+    pinMode(rightRearPin2, OUTPUT);
 
-    Serial.begin(9600); // Initializing baud rate at 9600 bits/ssec. Replace with USD sensor's recieving rate
+    pinMode(leftFrontPin1, OUTPUT);
+    pinMode(leftFrontPin2, OUTPUT);
+    pinMode(leftRearPin1, OUTPUT);
+    pinMode(leftRearPin2, OUTPUT);
+
+    Serial.begin(9600); // Initializing baud rate at 9600 bits/sec. Replace with USD sensor's recieving rate
 }
 
 void loop() {
     float x, y, t; 
-    bool v; // Declare variables to hold the data
-    //Enes100.getX will make sure you get the latest data available to you about your OTV's location.
-    //The first time getX is called, X, Y, theta and visibility are queried and cached.
-    //Subsequent calls return from the cache, so there is no performance gain to saving the function response to a variable.
+    bool v;
 
-    x = Enes100.getX();  // Your X coordinate! 0-4, in meters, -1 if no aruco is not visibility (but you should use Enes100.isVisible to check that instead)
-    y = Enes100.getY();  // Your Y coordinate! 0-2, in meters, also -1 if your aruco is not visible.
-    t = Enes100.getTheta();  //Your theta! -pi to +pi, in radians, -1 if your aruco is not visible.
-    v = Enes100.isVisible(); // Is your aruco visible? True or False.
+    x = Enes100.getX();  // X coordinate: 0-4 meters
+    y = Enes100.getY();  // Y coordinate: 0-2 meters
+    t = Enes100.getTheta();  // Theta: -pi to +pi in radians
+    v = Enes100.isVisible();
 
     if (v) {  // If the ArUco marker is visible
         Enes100.print(x); // print out the location
@@ -99,43 +102,70 @@ void loop() {
     delay(1000);
 }
 
+// Motor driver function implementations
+/* samePin1&2 should NEVER be same at same time */
 void forward() {
-    analogWrite(left_motor1_pin1, 200);
-    analogWrite(left_motor2_pin1, 200);
-    analogWrite(right_motor1_pin1, 200);
-    analogWrite(right_motor2_pin1, 200);
-}
-void backward() {
-    analogWrite(left_motor1_pin2, 200);
-    analogWrite(left_motor2_pin2, 200);
-    analogWrite(right_motor1_pin2, 200);
-    analogWrite(right_motor2_pin2, 200);
-}
-void left_turn() {
-    analogWrite(left_motor1_pin2, 200);
-    analogWrite(left_motor2_pin2, 200);
-    analogWrite(right_motor1_pin1, 200);
-    analogWrite(right_motor2_pin1, 200);
-}
-void right_turn() {
-    analogWrite(left_motor1_pin1, 200);
-    analogWrite(left_motor2_pin1, 200);
-    analogWrite(right_motor1_pin2, 200);
-    analogWrite(right_motor2_pin2, 200);
-}
-void stop() {
-    analogWrite(left_motor1_pin1, 0);
-    analogWrite(left_motor1_pin2, 0);
-    analogWrite(left_motor2_pin1, 0);
-    analogWrite(left_motor2_pin2, 0);
-    analogWrite(right_motor1_pin1, 0);
-    analogWrite(right_motor1_pin2, 0);
-    analogWrite(right_motor2_pin1, 0);
-    analogWrite(right_motor2_pin2, 0);
+    digitalWrite(rightFrontPin1, HIGH);
+    digitalWrite(rightFrontPin2, LOW);
+    digitalWrite(rightRearPin1, HIGH);
+    digitalWrite(rightRearPin2, LOW);
+
+    digitalWrite(leftFrontPin1, LOW);
+    digitalWrite(leftFrontPin2, HIGH);
+    digitalWrite(leftRearPin1, LOW);
+    digitalWrite(leftRearPin2, HIGH);
 }
 
+void backward() {
+    digitalWrite(rightFrontPin1, LOW);
+    digitalWrite(rightFrontPin2, HIGH);
+    digitalWrite(rightRearPin1, LOW);
+    digitalWrite(rightRearPin2, HIGH);
+
+    digitalWrite(leftFrontPin1, HIGH);
+    digitalWrite(leftFrontPin2, LOW);
+    digitalWrite(leftRearPin1, HIGH);
+    digitalWrite(leftRearPin2, LOW);
+}
+
+void left_turn() {
+  digitalWrite(rightFrontPin1, HIGH);
+  digitalWrite(rightFrontPin2, LOW);
+  digitalWrite(rightRearPin1, HIGH);
+  digitalWrite(rightRearPin2, LOW);
+
+  digitalWrite(leftFrontPin1, HIGH);
+  digitalWrite(leftFrontPin2, LOW);
+  digitalWrite(leftRearPin1, HIGH);;
+  digitalWrite(leftRearPin2, LOW);
+}
+
+void right_turn() {
+  digitalWrite(rightFrontPin1, LOW);
+  digitalWrite(rightFrontPin2, HIGH);
+  digitalWrite(rightRearPin1, LOW);
+  digitalWrite(rightRearPin2, HIGH);
+
+  digitalWrite(leftFrontPin1, LOW);
+  digitalWrite(leftFrontPin2, HIGH);
+  digitalWrite(leftRearPin1, LOW);
+  digitalWrite(leftRearPin2, HIGH);
+}
+
+void stop() {
+    digitalWrite(rightFrontPin1, LOW);
+    digitalWrite(rightFrontPin2, LOW);
+    digitalWrite(rightRearPin1, LOW);
+    digitalWrite(rightRearPin2, LOW);
+
+    digitalWrite(leftFrontPin1, LOW);
+    digitalWrite(leftFrontPin2, LOW);
+    digitalWrite(leftRearPin1, LOW);
+    digitalWrite(leftRearPin2, LOW);
+}
+
+// Sensor function implementations
 float distance_sensor(int trigPin, int echoPin) {
-    // USD sensor measuring code. Rewrite for each one? - something of the likes
     digitalWrite(trigPin, LOW); // Pulsing trigger pin
     delayMicroseconds(2);
     digitalWrite(trigPin, HIGH);
@@ -148,17 +178,23 @@ float distance_sensor(int trigPin, int echoPin) {
     return distance;
 }
 
-float tds_go() {
+void tds_go() {
     float tdsAnalogInput = analogRead(tdsPin);
-    /* Normalize reading in Arduino analog value range: (0, 2^10) then convert into ppm.
-    This mapping may be unneccesary if our own understanding of possible resulting analog values can be determined. */
+    // Normalize reading in Arduino analog value range: (0, 1023) then convert into ppm.
     float tdsValue = (tdsAnalogInput / 1024.0) * referenceVoltage * 500.0;
 
-    return tdsValue;    // Maybe make this boolean value maybe? (salt or no)
-}
+    if (tdsValue <= 450) {  // Fresh
+      // Send directly with Enes100.mission
+    } else {  // Salty
+      // Send directly with Enes100.mission
+    }
 
-float turbidity_go() {
-    float turbidityValue = analogRead(turbidityPin);  // Maybe will need to map turbidityValue to a meaningful range
+void turbidity_go() {
+    float turbidityValue = analogRead(turbidityPin);
 
-    return turbidityValue;
+    if (turbidityValue <= /*value*/) {
+      // Send directly with Enes100.mission
+    } else {
+      // Send directly with Enes100.mission
+    }
 }
