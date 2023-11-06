@@ -196,9 +196,9 @@ void tds_go() {
 void turbidity_go() {
     float turbidityValue = analogRead(turbidityPin);
 
-    if (turbidityValue <= /*value*/) {
+    if (turbidityValue >= 875) {  // Not polluted
       // Send directly with Enes100.mission
-    } else {
+    } else {  // Polluted
       // Send directly with Enes100.mission
     }
 }
