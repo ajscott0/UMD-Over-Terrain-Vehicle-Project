@@ -21,6 +21,7 @@ const int BechoPin = 12;  // Echo pin of USD sensor 2
 // Mission sensor pins
 const tdsPin = A0;  // TDS sensor pin
 const int turbidityPin = A9;  // Turbidity sensor pin
+const int pumpPin = A12; // Water pump pin
 
 // Other constant declarations
 const float referenceVoltage = 5.0;
@@ -35,6 +36,7 @@ void stop();
 float distance_sensor(int trigPin, int echoPin);
 void tds_go();
 void turbidity_go();
+void pump_go();
 
 void setup() {
     // Team Name, Mission Type, Marker ID, Wifi Module RX Pin, Wifi Module TX Pin
@@ -47,6 +49,8 @@ void setup() {
     pinMode(BechoPin, INPUT);
 
     pinMode(tdsPin, INPUT);
+    pinMode(turbidityPin, INPUT);
+    pinMode(pumpPin, OUTPUT);
 
     pinMode(rightFrontPin1, OUTPUT);
     pinMode(rightFrontPin2, OUTPUT);
@@ -197,4 +201,11 @@ void turbidity_go() {
     } else {
       // Send directly with Enes100.mission
     }
+}
+
+// Turn pump on and run for 10 seconds before stopping
+void pump_go() {
+    analogWrite(pumpPin, 255);
+    delay(10000);
+    analogWrite(pumpPin, 0); 
 }
