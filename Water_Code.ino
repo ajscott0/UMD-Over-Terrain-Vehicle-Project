@@ -1,5 +1,8 @@
 #include "Enes100.h"
 
+#define POOL_THICK 9 // Sampling pool base is 9mm thick at bottom
+#define ARM_HEIGHT 80 // Height of rigid arm in mm
+
 // Motor driver pins
 const int rightFrontPin1 = 2;
 const int rightFrontPin2 = 3;
@@ -19,12 +22,12 @@ const int BtrigPin = 11;  // Trigger pin of USD sensor 2
 const int BechoPin = 12;  // Echo pin of USD sensor 2
 
 // Mission sensor pins
-const tdsPin = A0;  // TDS sensor pin
+const int tdsPin = A0;  // TDS sensor pin
 const int turbidityPin = A9;  // Turbidity sensor pin
 const int pumpPin = A12; // Water pump pin
 
-// Other constant declarations
-const float referenceVoltage = 5.0;
+// Global variables
+int depth;
 
 
 // Function prototypes
@@ -34,8 +37,9 @@ void left_turn();
 void right_turn();
 void stop();
 float distance(int trigPin, int echoPin);
-void tds_go();
-void turbidity_go();
+int tds_go();
+int turbidity_go();
+float depth();
 void pump_go();
 
 void setup() {
@@ -86,7 +90,7 @@ void loop() {
   }
 
   /* Navigation Section */
-  
+  while (distance )
 
   
   // **Navigation Section**
@@ -101,15 +105,22 @@ void loop() {
   // }
 
   
-
-  /* Data Collection Section */
   
 
   
   // Transmit the state of the pool
-  Enes100.mission(WATER_TYPE, FRESH_POLLUTED);
+  if (tds_go() && turbidity_go()) {
+    Enes100.mission(WATER_TYPE, SALT_POLLUTED);
+  } else if (tds_go() && !turbidity_go()) {
+    Enes100.mission(WATER_TYPE, SALT_UNPOLLUTED);
+  } else if (!tds_go() && turbidity_go()) {
+    Enes100.mission(WATER_TYPE, FRESH_POLLUTED);
+  } else if (!tds_go() && !turbidity_go()) {
+    Enes100.mission(WATER_TYPE, FRESH_UNPOLLUTED);
+  }
+
   // Transmit the depth of the pool in mm (20, 30, or 40)
-  Enes100.mission(DEPTH, 30);
+  Enes100.mission(DEPTH, depth());
 }
 
 // Motor driver function implementations
@@ -188,26 +199,34 @@ float distance(int trigPin, int echoPin) {
   return distance;
 }
 
-void tds_go() {
+int tds_go() {
+  const float referenceVoltage = 5.0;
   float tdsAnalogInput = analogRead(tdsPin);
   // Normalize reading in Arduino analog value range: (0, 1023) then convert into ppm.
   float tdsValue = (tdsAnalogInput / 1024.0) * referenceVoltage * 500.0;
 
   if (tdsValue <= 450) {  // Fresh
-    // Send directly with Enes100.mission
+    return 0;
   } else {  // Salty
-    // Send directly with Enes100.mission
+    return 1;
   }
 }
 
-void turbidity_go() {
+int turbidity_go() {
   float turbidityValue = analogRead(turbidityPin);
 
   if (turbidityValue >= 875) {  // Not polluted
-    // Send directly with Enes100.mission
+    return 0;
   } else {  // Polluted
-    // Send directly with Enes100.mission
+    return 1;
   }
+}
+
+float depth() {
+  float dist_to_water = distance(BtrigPin, BechoPin);
+  float depth = ARM_HEIGHT - POOL_THICK - (dist_to_water * 10);
+
+  return depth;
 }
 
 // Turn pump on and run for 10 seconds before stopping
