@@ -24,11 +24,8 @@ const int BechoPin = 12;  // Echo pin of USD sensor 2
 // Mission sensor pins
 const int tdsPin = A0;  // TDS sensor pin
 const int turbidityPin = A9;  // Turbidity sensor pin
-const int pumpPin = A12; // Water pump pin
-
-// Global variables
-int depth;
-
+const int pumpPin1 = A12; // Water pump pin (motor driver pin 1)
+const int pumpPin2 = A13; // Water pump pin (motor driver pin 2)
 
 // Function prototypes
 void forward();
@@ -54,7 +51,8 @@ void setup() {
 
   pinMode(tdsPin, INPUT);
   pinMode(turbidityPin, INPUT);
-  pinMode(pumpPin, OUTPUT);
+  pinMode(pumpPin1, OUTPUT);
+  pinMode(pumpPin2, OUTPUT);
 
   pinMode(rightFrontPin1, OUTPUT);
   pinMode(rightFrontPin2, OUTPUT);
@@ -194,7 +192,7 @@ float distance(int trigPin, int echoPin) {
   digitalWrite(trigPin, LOW);
 
   long duration = pulseIn(echoPin, HIGH); // Measure time taken for echo pin to go HIGH
-  int distance = (duration / 29) / 2  // Speed of sound = 29 microsec/cm. Divided by 2 b/c back and forth.
+  int distance = (duration / 29) / 2;  // Speed of sound = 29 microsec/cm. Divided by 2 b/c back and forth.
 
   return distance;
 }
@@ -231,7 +229,10 @@ float depth() {
 
 // Turn pump on and run for 10 seconds before stopping
 void pump_go() {
-  analogWrite(pumpPin, 255);
+  analogWrite(pumpPin1, 255);
+  analogWrite(pumpPin2, 0);
   delay(10000);
-  analogWrite(pumpPin, 0); 
+  analogWrite(pumpPin1, 0);
+  analogWrite(pumpPin2, 0);
+
 }
