@@ -88,7 +88,7 @@ void loop() {
   }
 
   /* Navigation Section */
-  while (distance )
+  
 
   
   // **Navigation Section**
