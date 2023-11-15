@@ -45,21 +45,7 @@ void loop() {
   
 
   
-  // **Navigation Section**
-  // if (distance_sensor < 20){    //Sense obstacle (20cm) *can change the distance to whatever*
-  //     Serial.println("stop");
-  //     stop(); // stop (3 seconds)
-  //     //We can add a "while (sum > ___) here
-  //     //Or just do while instead of if
-  // } else { //No obstacle in front
-  //     Serial.println("forward");
-  //     forward();
-  // }
 
-  
-  
-
-  
   // Transmit the state of the pool
   if (tds_go() && turbidity_go()) {
     Enes100.mission(WATER_TYPE, SALT_POLLUTED);
