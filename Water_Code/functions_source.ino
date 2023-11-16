@@ -66,7 +66,7 @@ void stop() {
 }
 
 // Sensor function implementations
-float distance(int trigPin, int echoPin) {
+float distance1(int trigPin, int echoPin) {
   digitalWrite(trigPin, LOW); // Pulsing trigger pin
   delayMicroseconds(2);
   digitalWrite(trigPin, HIGH);
@@ -103,7 +103,7 @@ int turbidity_go() {
 }
 
 float depth() {
-  float dist_to_water = distance(BtrigPin, BechoPin);
+  float dist_to_water = distance1(BtrigPin, BechoPin);
   float depth = ARM_HEIGHT - POOL_THICK - (dist_to_water * 10);
 
   return depth;
@@ -126,7 +126,7 @@ int get_to_site() {
   x = Enes100.getX();  // 0-4 meters
   y = Enes100.getY();  // 0-2 meters
   t = Enes100.getTheta();  // -pi to +pi in radians
-  distance = distance(AtrigPin, AechoPin);
+  distance = distance1(AtrigPin, AechoPin);
 
   if (y >= 1) {
     while (t != -PI/2) {  // How to update this constanty??
@@ -142,7 +142,7 @@ int get_to_site() {
 
   while (distance > 3) {  // How to update this constanty??
     forward();
-    distance = distance(AtrigPin, AechoPin);
+    distance = distance1(AtrigPin, AechoPin);
   }
   stop();
 }
