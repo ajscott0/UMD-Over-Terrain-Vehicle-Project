@@ -38,7 +38,7 @@ void backward();
 void left_turn();
 void right_turn();
 void stop();
-float distance(int trigPin, int echoPin);
+float distance1(int trigPin, int echoPin);
 int tds_go();
 int turbidity_go();
 float depth();
