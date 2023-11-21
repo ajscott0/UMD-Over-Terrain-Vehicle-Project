@@ -241,4 +241,6 @@ int get_to_destination() {
     }
   }
   stop();
+
+  return 1;
 }
