@@ -145,8 +145,100 @@ int get_to_site() {
     distance = distance1(AtrigPin, AechoPin);
   }
   stop();
+  return 1;
 }
 
 int collect_water() {
+  pump_go();
+  return 1;
+}
 
+int obtain_data() {
+  // Transmit the state of the pool
+  if (tds_go() && turbidity_go()) {
+    Enes100.mission(WATER_TYPE, SALT_POLLUTED);
+  } else if (tds_go() && !turbidity_go()) {
+    Enes100.mission(WATER_TYPE, SALT_UNPOLLUTED);
+  } else if (!tds_go() && turbidity_go()) {
+    Enes100.mission(WATER_TYPE, FRESH_POLLUTED);
+  } else if (!tds_go() && !turbidity_go()) {
+    Enes100.mission(WATER_TYPE, FRESH_UNPOLLUTED);
+  }
+
+  // Transmit the depth of the pool in mm (20, 30, or 40)
+  Enes100.mission(DEPTH, depth());
+  
+  return 1;
+}
+
+int get_to_destination() {
+  float x, y, t distance;
+  x = Enes100.getX(); // All my initial data before entering loop
+  y = Enes100.getY();
+  t = Enes100.getTheta();
+  distance = distance1(AtrigPin, AechoPin);
+
+  while (x < 3.4 && y < 1) {  // OSV is outisde goal zone
+    x = Enes100.getX();
+    y = Enes100.getY();
+    t = Enes100.getTheta();
+    distance = distance1(AtrigPin, AechoPin);
+    
+    if (distance > 20 && x < 2.8) { // If no obstacle within 20 cm, but not past all obstacles, face destination then drive
+      while (t != 0) {
+        right_turn();
+        t = Enes100.getTheta(); 
+      }
+      stop();
+      forward();
+    } else if (distance <= 20 && x < 2.8) {   // If obstacles ahead (and not past all regular obstacles), do this
+      stop();
+      if (y < 1) {  // OSV on bottom of arena, want to turn inside
+        while (t != PI/2) {
+          left_turn();  // Turn from obstacle
+          t = Enes100.getTheta();
+        }
+        stop();
+        forward();
+        delay(2000);  // Drive "up" for 2 seconds to get around obstacle
+        stop();
+        while (t != 0) {  
+          right_turn(); // Turn back to destination
+          t = Enes100.getTheta();
+        }
+        stop();
+      } else if (y >= 1) {  // OSV on top of arena, want to turn inside
+        while (t != -PI/2) {
+          right_turn();  // Turn from obstacle
+          t = Enes100.getTheta();
+        }
+        stop();
+        forward();
+        delay(2000);  // Drive "down" for 2 seconds to get around obstacle
+        stop();
+        while (t != 0) {  
+          left_turn(); // Turn back to destination
+          t = Enes100.getTheta();
+        }
+        stop();
+      }
+    } else if (x >= 2.8) {  // Past all regular obstacles
+      while (y < 1.2) {  // If on bottom, we need to get sufficiently into top for limbo
+        while (t != PI/2) {
+          left_turn();
+          t = Enes100.getTheta();
+        }
+        stop();
+        forward();
+      }
+      stop();
+      while (t != 0) {
+        right_turn();
+        t = Enes100.getTheta();
+      }
+      stop();
+      forward();
+    }
+  }
+  stop();
 }
