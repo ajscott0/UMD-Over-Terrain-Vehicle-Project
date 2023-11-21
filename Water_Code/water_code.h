@@ -47,5 +47,7 @@ void pump_go();
 // Specific Mission Phase Function Prototypes
 int get_to_site();
 int collect_water();
+int obtain_data();
+int get_to_destination();
 
 #endif
