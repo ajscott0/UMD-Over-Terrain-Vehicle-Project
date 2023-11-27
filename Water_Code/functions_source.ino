@@ -225,7 +225,7 @@ int get_to_destination() {
     } else if (x >= 2.8) {  // Past all regular obstacles
       while (y < 1.2) {  // If on bottom, we need to get sufficiently into top for limbo
         while (t != PI/2) {
-          left_turn();
+          left_turn();  // Turn upwards to get to limbo
           t = Enes100.getTheta();
         }
         stop();
@@ -233,7 +233,7 @@ int get_to_destination() {
       }
       stop();
       while (t != 0) {
-        right_turn();
+        right_turn();  // Turn back towards right edge of arena (towards limbo)
         t = Enes100.getTheta();
       }
       stop();
