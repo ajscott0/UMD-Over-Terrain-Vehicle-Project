@@ -1,10 +1,12 @@
 #include "water_code.h"
 #include "Enes100.h"
+#include <math.h>
 
 void setup() {
   // Team Name, Mission Type, Marker ID, Wifi Module RX Pin, Wifi Module TX Pin
-  Enes100.begin("Ban-anna Mike-anics", WATER, 209, 11, 10);
+  Enes100.begin("Ban-anna Mike-anics", WATER, 10, 11, 10);
   Enes100.println("Connected...");
+  delay(2000);
 
   pinMode(AtrigPin, OUTPUT);
   pinMode(AechoPin, INPUT);
@@ -30,21 +32,15 @@ void setup() {
 }
 
 void loop() {
-
-  if (v) {  // If the ArUco marker is visible
-    Enes100.print(x); // print out the location
-    Enes100.print(",");
-    Enes100.print(y);
-    Enes100.print(",");
-    Enes100.println(t);
-  } else {
-    Enes100.println("Not visible");
-  }
-
-  /* Navigation Section */
-  get_to_site();
-  collect_water();
-  obtain_data();
+  // get_to_site();
+  // pump_go();
+  // obtain_data();
   get_to_destination();
+  delay(1000000);
+
+  // float distance = distance1(AtrigPin, AechoPin);
+  // Enes100.println("Distance: ");
+  // Enes100.println(distance);
+  // delay(1000);
 
 }
