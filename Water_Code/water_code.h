@@ -4,7 +4,7 @@
 // Macros
 #define PI 3.14 // Used in determining angles
 #define POOL_THICK 9 // Sampling pool base is 9mm thick at bottom
-#define ARM_HEIGHT 80 // Height of rigid arm in mm
+#define ARM_HEIGHT 110 // Height of rigid arm in mm
 
 // Pin declarations
 
@@ -28,9 +28,11 @@ const int BechoPin = 15;  // Echo pin of USD sensor 2
 
 // Mission sensor pins
 const int tdsPin = A0;  // TDS sensor pin
-const int turbidityPin = A9;  // Turbidity sensor pin
-const int pumpPin1 = A12; // Water pump pin (motor driver pin 1)
-const int pumpPin2 = A13; // Water pump pin (motor driver pin 2)
+const int turbidityPin = A1;  // Turbidity sensor pin
+const int pumpPin1 = A2; // Water pump pin (motor driver pin 1)
+const int pumpPin2 = A3; // Water pump pin (motor driver pin 2)
+
+float x, y, t, distance;
 
 // Broad-Scope Function Prototypes
 void forward();
@@ -44,9 +46,11 @@ int turbidity_go();
 float depth();
 void pump_go();
 
+void turn_to(double target_angle);
+int get_to_point(double target_x, double target_y);
+
 // Specific Mission Phase Function Prototypes
 int get_to_site();
-int collect_water();
 int obtain_data();
 int get_to_destination();
 
