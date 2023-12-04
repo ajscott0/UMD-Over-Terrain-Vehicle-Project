@@ -1,5 +1,6 @@
 #include "water_code.h"
 #include "Enes100.h"
+#include <math.h>
 
 // Broad-Scope Function Implementations
 
@@ -104,7 +105,7 @@ int turbidity_go() {
 
 float depth() {
   float dist_to_water = distance1(BtrigPin, BechoPin);
-  float depth = ARM_HEIGHT - POOL_THICK - (dist_to_water * 10);
+  float depth = ARM_HEIGHT - POOL_THICK - 3 - (dist_to_water * 10); // - 3 from Velcro height
 
   return depth;
 }
@@ -118,39 +119,100 @@ void pump_go() {
   analogWrite(pumpPin2, 0);
 }
 
-// Specific Mission Phase Functions
+void turn_to(double target_angle) {
+  int turnDelay = 5;
+  bool keep_turning = true;
+  double tolerance = 0.15;
 
-int get_to_site() {
-  float x, y, t, distance; 
-
-  x = Enes100.getX();  // 0-4 meters
-  y = Enes100.getY();  // 0-2 meters
-  t = Enes100.getTheta();  // -pi to +pi in radians
-  distance = distance1(AtrigPin, AechoPin);
-
-  if (y >= 1) {
-    while (t != -PI/2) {  // How to update this constanty??
-      right_turn();
-      t = Enes100.getTheta();
-    }
-  } else if (y < 1) {
-    while (t != PI/2) {
-      right_turn();
-      t = Enes100.getTheta();
+  t = Enes100.getTheta();
+  while (keep_turning == true) {
+    t = Enes100.getTheta();
+    if (((t < target_angle + tolerance) && (t > target_angle - tolerance))) {
+      stop();
+      keep_turning = false;
+    } else {
+      if ((t - target_angle) < 0) {
+        left_turn();
+        Enes100.println(t - target_angle);
+      } else {
+        right_turn();
+      }
+      delay(turnDelay);
+      stop();
+      delay(turnDelay);
     }
   }
-
-  while (distance > 3) {  // How to update this constanty??
-    forward();
-    distance = distance1(AtrigPin, AechoPin);
-  }
-  stop();
-  return 1;
 }
 
-int collect_water() {
-  pump_go();
-  return 1;
+int get_to_point(double target_x, double target_y) {
+  float cur_x, cur_y, distance;
+  double heading, tolerance;
+  tolerance = 0.1;
+
+  Enes100.updateLocation();
+  cur_x = Enes100.location.x;
+  cur_y = Enes100.location.y;
+  distance = distance1(AtrigPin, AechoPin);
+
+  heading = atan2(target_y - cur_y, target_x - cur_x);
+  Enes100.println(heading);
+  Enes100.println(distance);
+
+  turn_to(heading);
+
+  bool keep_driving = true;
+  unsigned long current_time;
+  unsigned long last_recalculation = 0;
+  unsigned long recalculation_interval = 2000;
+
+  while (keep_driving == true) {
+    Enes100.updateLocation();
+    cur_x = Enes100.location.x;
+    cur_y = Enes100.location.y;
+    distance = distance1(AtrigPin, AechoPin);
+    Enes100.println("Distance: ");
+    Enes100.println(distance);
+
+    if (cur_x > (target_x - tolerance) && cur_x < (target_x + tolerance) && cur_y > (target_y - tolerance) && cur_y < (target_y + tolerance)) {
+      stop();
+      keep_driving = false;
+      return 1;
+    }
+    if (distance < 30) {
+      stop();
+      keep_driving = false;
+      return 2;
+    }
+    forward();
+    current_time = millis();
+    if (current_time - last_recalculation >= recalculation_interval) {
+      stop();
+      heading = atan2(target_y - cur_y, target_x - cur_x);
+      turn_to(heading);
+      last_recalculation = current_time;
+    }
+  }
+
+  stop();
+}
+
+// Specific Mission Phase Functions
+int get_to_site() {
+  float cur_x, cur_y, distance;
+  Enes100.updateLocation();
+  cur_x = Enes100.location.x;
+  cur_y = Enes100.location.y;
+  distance = distance1(AtrigPin, AechoPin);
+
+  Enes100.println(cur_x);
+  Enes100.println(cur_y);
+
+  if (cur_y < 1) {
+    get_to_point(0.55, 1.45);
+  } else {
+    get_to_point(0.55, 0.55);
+  }
+  stop();
 }
 
 int obtain_data() {
@@ -172,75 +234,32 @@ int obtain_data() {
 }
 
 int get_to_destination() {
-  float x, y, t distance;
-  x = Enes100.getX(); // All my initial data before entering loop
-  y = Enes100.getY();
-  t = Enes100.getTheta();
+  float cur_x, cur_y, distance;
+  Enes100.updateLocation();
+  cur_x = Enes100.location.x;
+  cur_y = Enes100.location.y;
   distance = distance1(AtrigPin, AechoPin);
 
-  while (x < 3.4 && y < 1) {  // OSV is outisde goal zone
-    x = Enes100.getX();
-    y = Enes100.getY();
-    t = Enes100.getTheta();
-    distance = distance1(AtrigPin, AechoPin);
-    
-    if (distance > 20 && x < 2.8) { // If no obstacle within 20 cm, but not past all obstacles, face destination then drive
-      while (t != 0) {
-        right_turn();
-        t = Enes100.getTheta(); 
-      }
-      stop();
-      forward();
-    } else if (distance <= 20 && x < 2.8) {   // If obstacles ahead (and not past all regular obstacles), do this
-      stop();
-      if (y < 1) {  // OSV on bottom of arena, want to turn inside
-        while (t != PI/2) {
-          left_turn();  // Turn from obstacle
-          t = Enes100.getTheta();
-        }
-        stop();
-        forward();
-        delay(2000);  // Drive "up" for 2 seconds to get around obstacle
-        stop();
-        while (t != 0) {  
-          right_turn(); // Turn back to destination
-          t = Enes100.getTheta();
-        }
-        stop();
-      } else if (y >= 1) {  // OSV on top of arena, want to turn inside
-        while (t != -PI/2) {
-          right_turn();  // Turn from obstacle
-          t = Enes100.getTheta();
-        }
-        stop();
-        forward();
-        delay(2000);  // Drive "down" for 2 seconds to get around obstacle
-        stop();
-        while (t != 0) {  
-          left_turn(); // Turn back to destination
-          t = Enes100.getTheta();
-        }
-        stop();
-      }
-    } else if (x >= 2.8) {  // Past all regular obstacles
-      while (y < 1.2) {  // If on bottom, we need to get sufficiently into top for limbo
-        while (t != PI/2) {
-          left_turn();  // Turn upwards to get to limbo
-          t = Enes100.getTheta();
-        }
-        stop();
-        forward();
-      }
-      stop();
-      while (t != 0) {
-        right_turn();  // Turn back towards right edge of arena (towards limbo)
-        t = Enes100.getTheta();
-      }
-      stop();
-      forward();
+  if (cur_y > 1) {  // If on top
+    if (get_to_point(1.5, 1.5) == 1) {  // Got to point
+      get_to_point(1.9, 1.5);
+    } else if (get_to_point(1.5, 1.5) == 2) { // Encountered obstacle
+      get_to_point(1.5, 1.8);
+    }
+  } else if (y <= 1) {  // If on bottom
+    if (get_to_point(1.5, 0.5) == 1) {  // Got to point
+      get_to_point(1.9, 0.5);
+    } else if (get_to_point(1.5, 0.5) == 2) { // Encountered obstacle
+      get_to_point(1.5, 1.8);
     }
   }
-  stop();
+
+  get_to_point(1.9, 1.0); // Go to middle either way
+
+  
+
+  // Go up to limbo, if not already there
+  // Go under limbo
 
   return 1;
 }
