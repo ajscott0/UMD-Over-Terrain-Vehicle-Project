@@ -7,6 +7,8 @@
 #define ARM_HEIGHT 110 // Height of rigid arm in mm
 
 // Pin declarations
+// const int salin1 = 0;
+// const int salin2 = 1;
 
 // Motor driver pins
 const int rightFrontPin1 = 2;
