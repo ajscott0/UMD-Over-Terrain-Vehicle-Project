@@ -4,6 +4,7 @@
 
 void setup() {
   // Team Name, Mission Type, Marker ID, Wifi Module RX Pin, Wifi Module TX Pin
+  delay(1000);
   Enes100.begin("Ban-anna Mike-anics", WATER, 10, 11, 10);
   Enes100.println("Connected...");
   delay(2000);
@@ -28,7 +29,7 @@ void setup() {
   pinMode(leftRearPin1, OUTPUT);
   pinMode(leftRearPin2, OUTPUT);
 
-  Serial.begin(9600); // Initializing baud rate at 9600 bits/sec. Replace with USD sensor's recieving rate
+  Serial.begin(9600);  // Initializing baud rate at 9600 bits/sec. Replace with USD sensor's recieving rate
 }
 
 void loop() {
@@ -37,10 +38,10 @@ void loop() {
   // obtain_data();
   get_to_destination();
   delay(1000000);
-
-  // float distance = distance1(AtrigPin, AechoPin);
-  // Enes100.println("Distance: ");
+  // distance = distance1(AtrigPin, AechoPin);
+  // Enes100.print("Distance: ");
   // Enes100.println(distance);
-  // delay(1000);
+  // delay(100);
+
 
 }
