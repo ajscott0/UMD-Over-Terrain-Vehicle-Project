@@ -29,19 +29,20 @@ void setup() {
   pinMode(leftRearPin1, OUTPUT);
   pinMode(leftRearPin2, OUTPUT);
 
-  Serial.begin(9600);  // Initializing baud rate at 9600 bits/sec. Replace with USD sensor's recieving rate
+  Serial.begin(9600);  // Initializing baud rate at 9600 bits/sec.
 }
 
 void loop() {
   get_to_site();
   delay(5000);
-  // pump_go();
+  pump_go();
+  turbidity_go();
+  tds_go();
   depth1();
-  // Enes100.print("Depth: ");
-  // Enes100.println(depth);
   mission_broadcast();
   get_to_destination();
 
+  // Reverse pump code: drain water collection dish
   // analogWrite(pumpPin2, 255);
   // analogWrite(pumpPin1, 0);
   // delay(40000);
@@ -49,10 +50,4 @@ void loop() {
   // analogWrite(pumpPin2, 0);
 
   delay(1000000);
-  // distance = distance1(AtrigPin, AechoPin);
-  // Enes100.print("Distance: ");
-  // Enes100.println(distance);
-  // delay(100);
-
-
 }
