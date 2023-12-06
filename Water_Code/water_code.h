@@ -2,13 +2,10 @@
 #define WATER_CODE_H
 
 // Macros
-#define PI 3.14 // Used in determining angles
 #define POOL_THICK 9 // Sampling pool base is 9mm thick at bottom
 #define ARM_HEIGHT 110 // Height of rigid arm in mm
 
 // Pin declarations
-// const int salin1 = 0;
-// const int salin2 = 1;
 
 // Motor driver pins
 const int rightFrontPin1 = 2;
@@ -35,6 +32,7 @@ const int pumpPin1 = A1; // Water pump pin (motor driver pin 1)
 const int pumpPin2 = A2; // Water pump pin (motor driver pin 2)
 
 float cur_x, cur_y, distance;
+// Data analysis related global variables
 int salt = 0, polluted = 0;
 float depth = 30;
 
