@@ -77,52 +77,113 @@ float distance1(int trigPin, int echoPin) {
   delayMicroseconds(10);
   digitalWrite(trigPin, LOW);
 
-  duration = pulseIn(echoPin, HIGH);  // Measure time taken for echo pin to go HIGH
-  distance_in_func = (duration * 0.0343) / 2;      // Speed of sound = 29 microsec/cm. Divided by 2 b/c back and forth.
+  duration = pulseIn(echoPin, HIGH);           // Measure time taken for echo pin to go HIGH
+  distance_in_func = (duration * 0.0343) / 2;  // Speed of sound = 29 microsec/cm. Divided by 2 b/c back and forth.
 
   return distance_in_func;
 }
 
 int tds_go() {
-  const float referenceVoltage = 5.0;
-  float tdsAnalogInput = analogRead(tdsPin);
-  // Normalize reading in Arduino analog value range: (0, 1023) then convert into ppm.
-  float tdsValue = (tdsAnalogInput / 1024.0) * referenceVoltage * 500.0;
+  int dtime = 500;
+  int raw = 0;
+  int Vin = 5;
+  float Vout = 0;
+  float R1 = 1000;
+  float R2 = 0;
+  float buff = 0;
+  float avg = 0;
+  int samples = 5000;
 
-  if (tdsValue <= 450) {  // Fresh
-    return 0;
-  } else {  // Salty
-    return 1;
+  float tot = 0;
+  for (int i = 0; i < samples; i++) {
+    digitalWrite(1, HIGH);
+    digitalWrite(0, LOW);
+    delayMicroseconds(dtime);
+    digitalWrite(1, LOW);
+    digitalWrite(0, HIGH);
+    delayMicroseconds(dtime);
+    raw = analogRead(A3);
+    if (raw) {
+      buff = raw * Vin;
+      Vout = (buff) / 1024.0;
+      buff = (Vin / Vout) - 1;
+      R2 = R1 * buff;
+      //Serial.print("Vout: ");
+      //Serial.println(Vout);
+      //Serial.print("R2: ");
+      //Serial.println(R2);
+      tot = tot + R2;
+    }
+  }
+
+  avg = tot / samples;
+  // Serial.print("The average resistance is: ");
+  // Enes100.println(avg);
+  // Serial.println(" Ohm");
+  if (avg > 3000) {
+    salt = 1;
+  } else {
+    salt = 0;
   }
 }
 
 int turbidity_go() {
-  float turbidityValue = analogRead(turbidityPin);
+  int valuephoto = analogRead(turbidityPin);
 
-  if (turbidityValue >= 875) {  // Not polluted
-    return 0;
-  } else {  // Polluted
-    return 1;
+  // Serial.println("Analog Value: ");
+  // Serial.println(valuephoto);
+  if (valuephoto > 300) {
+    polluted = 0;
+  } else {
+    polluted = 1;
+  }
+  delay(250);
+}
+
+void mission_broadcast() {
+  Enes100.mission(DEPTH, depth);
+
+  if (salt == 1 && polluted == 1) {
+    Enes100.mission(WATER_TYPE, SALT_POLLUTED);
+  } else if (salt == 1 && polluted == 0) {
+    Enes100.mission(WATER_TYPE, SALT_UNPOLLUTED);
+  } else if (salt == 0 && polluted == 1) {
+    Enes100.mission(WATER_TYPE, FRESH_POLLUTED);
+  } else {
+    Enes100.mission(WATER_TYPE, FRESH_UNPOLLUTED);
   }
 }
 
-float depth() {
-  float dist_to_water = distance1(BtrigPin, BechoPin);
-  float depth = ARM_HEIGHT - POOL_THICK - 3 - (dist_to_water * 10);  // - 3 from Velcro height
+void depth1() {
+  float duration, distance_in_func;
 
-  return depth;
+  digitalWrite(BtrigPin, LOW);  // Pulsing trigger pin
+  delayMicroseconds(2);
+  digitalWrite(BtrigPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(BtrigPin, LOW);
+
+  duration = pulseIn(BechoPin, HIGH);           // Measure time taken for echo pin to go HIGH
+  distance_in_func = (duration * 0.0343) / 2;  // Speed of sound = 29 microsec/cm. Divided by 2 b/c back and forth.
+
+  // Enes100.println(distance_in_func);
+
+  float dist_to_water = distance_in_func;
+  depth = 11.4 - (dist_to_water) - 0.9;  // - 3 from Velcro height
+  depth = depth * 10;
 }
 
 // Turn pump on and run for 10 seconds before stopping
 void pump_go() {
-  analogWrite(pumpPin1, 255);
   analogWrite(pumpPin2, 0);
-  delay(10000);
+  analogWrite(pumpPin1, 255);
+  delay(40000);
   analogWrite(pumpPin1, 0);
   analogWrite(pumpPin2, 0);
 }
 
 void turn_to(double target_angle) {
+  float t;
   int turnDelay = 5;
   bool keep_turning = true;
   double tolerance = 0.15;
@@ -146,8 +207,16 @@ void turn_to(double target_angle) {
   }
 }
 
+void print_stats() {
+  Enes100.print("Distance: ");
+  Enes100.println(distance);
+  Enes100.print("Current X: ");
+  Enes100.println(cur_x);
+  Enes100.print("Current Y: ");
+  Enes100.println(cur_y);
+}
+
 int get_to_point(double target_x, double target_y) {
-  float cur_x, cur_y, distance;
   double heading, tolerance;
   tolerance = 0.1;
 
@@ -170,15 +239,16 @@ int get_to_point(double target_x, double target_y) {
     cur_x = Enes100.location.x;
     cur_y = Enes100.location.y;
     distance = distance1(AtrigPin, AechoPin);
-    Enes100.print("Distance: ");
-    Enes100.println(distance);
+    // print_stats();
+    // Enes100.print("Heading: ");
+    // Enes100.println(heading);
 
     if (cur_x > (target_x - tolerance) && cur_x < (target_x + tolerance) && cur_y > (target_y - tolerance) && cur_y < (target_y + tolerance)) {
       stop();
       keep_driving = false;
       return 1;
     }
-    if (distance < 11) {
+    if (distance < 15) {
       stop();
       keep_driving = false;
       return 2;
@@ -198,51 +268,127 @@ int get_to_point(double target_x, double target_y) {
 
 // Specific Mission Phase Functions
 int get_to_site() {
-  float cur_x, cur_y, distance;
   Enes100.updateLocation();
   cur_x = Enes100.location.x;
   cur_y = Enes100.location.y;
   distance = distance1(AtrigPin, AechoPin);
 
-  Enes100.println(cur_x);
-  Enes100.println(cur_y);
-
   if (cur_y < 1) {
-    get_to_point(0.55, 1.45);
+    double heading, tolerance;
+    tolerance = 0.1;
+
+    Enes100.updateLocation();
+    cur_x = Enes100.location.x;
+    cur_y = Enes100.location.y;
+    distance = distance1(AtrigPin, AechoPin);
+    float target_x = 0.55;
+    float target_y = 1.45;
+
+    heading = atan2(target_y - cur_y, target_x - cur_x);
+
+    turn_to(heading);
+
+    bool keep_driving = true;
+    unsigned long current_time;
+    unsigned long last_recalculation = 0;
+    unsigned long recalculation_interval = 1000;
+
+    while (keep_driving == true) {
+      Enes100.updateLocation();
+      cur_x = Enes100.location.x;
+      cur_y = Enes100.location.y;
+      distance = distance1(AtrigPin, AechoPin);
+      print_stats();
+      Enes100.print("Heading: ");
+      Enes100.println(heading);
+
+      if (cur_x > (target_x - tolerance) && cur_x < (target_x + tolerance) && cur_y > (target_y - tolerance) && cur_y < (target_y + tolerance)) {
+        stop();
+        keep_driving = false;
+        return 1;
+      }
+      if (distance < 3) {
+        stop();
+        keep_driving = false;
+        return 2;
+      }
+      forward();
+      current_time = millis();
+      if (current_time - last_recalculation >= recalculation_interval) {
+        stop();
+        heading = atan2(target_y - cur_y, target_x - cur_x);
+        turn_to(heading);
+        last_recalculation = current_time;
+      }
+    }
+
+    stop();
   } else {
-    get_to_point(0.55, 0.55);
+    double heading, tolerance;
+    tolerance = 0.1;
+
+    Enes100.updateLocation();
+    cur_x = Enes100.location.x;
+    cur_y = Enes100.location.y;
+    distance = distance1(AtrigPin, AechoPin);
+    float target_x = 0.50;
+    float target_y = 0.55;
+
+    heading = atan2(target_y - cur_y, target_x - cur_x);
+
+    turn_to(heading);
+
+    bool keep_driving = true;
+    unsigned long current_time;
+    unsigned long last_recalculation = 0;
+    unsigned long recalculation_interval = 1000;
+
+    while (keep_driving == true) {
+      Enes100.updateLocation();
+      cur_x = Enes100.location.x;
+      cur_y = Enes100.location.y;
+      distance = distance1(AtrigPin, AechoPin);
+      print_stats();
+      Enes100.print("Heading: ");
+      Enes100.println(heading);
+
+      if (cur_x > (target_x - tolerance) && cur_x < (target_x + tolerance) && cur_y > (target_y - tolerance) && cur_y < (target_y + tolerance)) {
+        stop();
+        keep_driving = false;
+        return 1;
+      }
+      if (distance < 3) {
+        stop();
+        keep_driving = false;
+        return 2;
+      }
+      forward();
+      current_time = millis();
+      if (current_time - last_recalculation >= recalculation_interval) {
+        stop();
+        heading = atan2(target_y - cur_y, target_x - cur_x);
+        turn_to(heading);
+        last_recalculation = current_time;
+      }
+    }
+
+    stop();
   }
   stop();
 }
 
-int obtain_data() {
-  // Transmit the state of the pool
-  if (tds_go() && turbidity_go()) {
-    Enes100.mission(WATER_TYPE, SALT_POLLUTED);
-  } else if (tds_go() && !turbidity_go()) {
-    Enes100.mission(WATER_TYPE, SALT_UNPOLLUTED);
-  } else if (!tds_go() && turbidity_go()) {
-    Enes100.mission(WATER_TYPE, FRESH_POLLUTED);
-  } else if (!tds_go() && !turbidity_go()) {
-    Enes100.mission(WATER_TYPE, FRESH_UNPOLLUTED);
-  }
-
-  // Transmit the depth of the pool in mm (20, 30, or 40)
-  Enes100.mission(DEPTH, depth());
-
-  return 1;
-}
-
 int get_to_destination() {
-  float cur_x, cur_y, distance;
   Enes100.updateLocation();
   cur_x = Enes100.location.x;
   cur_y = Enes100.location.y;
-  distance = distance1(AtrigPin, AechoPin);
+  // distance = distance1(AtrigPin, AechoPin);
+
+  backward();
+  delay(1000);
+  stop();
 
   if (cur_y > 1) {           // If on top
     get_to_point(1.1, 1.5);  // Approach potential obstacle
-    Enes100.println("Function executed");
     if (get_to_point(1.5, 1.5) == 1) {    // Got to point
       get_to_point(1.9, 1.5);             // Continue
     } else {                              // Encountered obstacle
@@ -255,7 +401,7 @@ int get_to_destination() {
         get_to_point(1.9, 0.5);           // continue
       }
     }
-  } else if (y <= 1) {                    // If on bottom
+  } else if (cur_y <= 1) {                // If on bottom
     get_to_point(1.1, 0.5);               // Aproach potential obstalce
     if (get_to_point(1.5, 0.5) == 1) {    // Got to point
       get_to_point(1.9, 0.5);             // Continue
@@ -287,7 +433,12 @@ int get_to_destination() {
   }
 
   get_to_point(3.1, 1.5);  // Go to front of limbo in perperation from going under
-  get_to_point(3.7, 1.5);  // Go under limbo
+  turn_to(0);
+  forward();
+  delay(7000);
+  stop();
+
+  // get_to_point(3.7, 1.5);  // Go under limbo
 
   return 1;
 }
