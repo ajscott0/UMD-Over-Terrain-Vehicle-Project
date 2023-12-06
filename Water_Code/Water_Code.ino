@@ -33,10 +33,21 @@ void setup() {
 }
 
 void loop() {
-  // get_to_site();
+  get_to_site();
+  delay(5000);
   // pump_go();
-  // obtain_data();
+  depth1();
+  // Enes100.print("Depth: ");
+  // Enes100.println(depth);
+  mission_broadcast();
   get_to_destination();
+
+  // analogWrite(pumpPin2, 255);
+  // analogWrite(pumpPin1, 0);
+  // delay(40000);
+  // analogWrite(pumpPin1, 0);
+  // analogWrite(pumpPin2, 0);
+
   delay(1000000);
   // distance = distance1(AtrigPin, AechoPin);
   // Enes100.print("Distance: ");
