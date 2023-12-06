@@ -25,16 +25,18 @@ const int leftRearPin2 = 9;
 const int AtrigPin = 12;  // Trigger pin
 const int AechoPin = 13; // Echo pin
 
-const int BtrigPin = 14;  // Trigger pin of USD sensor 2
-const int BechoPin = 15;  // Echo pin of USD sensor 2
+const int BtrigPin = A4;  // Trigger pin of USD sensor 2
+const int BechoPin = A3;  // Echo pin of USD sensor 2
 
 // Mission sensor pins
 const int tdsPin = A0;  // TDS sensor pin
-const int turbidityPin = A1;  // Turbidity sensor pin
-const int pumpPin1 = A2; // Water pump pin (motor driver pin 1)
-const int pumpPin2 = A3; // Water pump pin (motor driver pin 2)
+const int turbidityPin = A3;  // Turbidity sensor pin
+const int pumpPin1 = A1; // Water pump pin (motor driver pin 1)
+const int pumpPin2 = A2; // Water pump pin (motor driver pin 2)
 
-float x, y, t, distance;
+float cur_x, cur_y, distance;
+int salt = 0, polluted = 0;
+float depth = 30;
 
 // Broad-Scope Function Prototypes
 void forward();
@@ -45,8 +47,10 @@ void stop();
 float distance1(int trigPin, int echoPin);
 int tds_go();
 int turbidity_go();
-float depth();
+void mission_broadcast();
+void depth1();
 void pump_go();
+void print_stats();
 
 void turn_to(double target_angle);
 int get_to_point(double target_x, double target_y);
