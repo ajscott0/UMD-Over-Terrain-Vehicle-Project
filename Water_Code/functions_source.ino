@@ -108,18 +108,12 @@ int tds_go() {
       Vout = (buff) / 1024.0;
       buff = (Vin / Vout) - 1;
       R2 = R1 * buff;
-      //Serial.print("Vout: ");
-      //Serial.println(Vout);
-      //Serial.print("R2: ");
-      //Serial.println(R2);
       tot = tot + R2;
     }
   }
 
   avg = tot / samples;
-  // Serial.print("The average resistance is: ");
-  // Enes100.println(avg);
-  // Serial.println(" Ohm");
+  
   if (avg > 3000) {
     salt = 1;
   } else {
@@ -130,8 +124,6 @@ int tds_go() {
 int turbidity_go() {
   int valuephoto = analogRead(turbidityPin);
 
-  // Serial.println("Analog Value: ");
-  // Serial.println(valuephoto);
   if (valuephoto > 300) {
     polluted = 0;
   } else {
@@ -166,14 +158,12 @@ void depth1() {
   duration = pulseIn(BechoPin, HIGH);           // Measure time taken for echo pin to go HIGH
   distance_in_func = (duration * 0.0343) / 2;  // Speed of sound = 29 microsec/cm. Divided by 2 b/c back and forth.
 
-  // Enes100.println(distance_in_func);
-
   float dist_to_water = distance_in_func;
   depth = 11.4 - (dist_to_water) - 0.9;  // - 3 from Velcro height
   depth = depth * 10;
 }
 
-// Turn pump on and run for 10 seconds before stopping
+// Turn pump on and run for 40 seconds before stopping
 void pump_go() {
   analogWrite(pumpPin2, 0);
   analogWrite(pumpPin1, 255);
@@ -207,7 +197,7 @@ void turn_to(double target_angle) {
   }
 }
 
-void print_stats() {
+void print_stats() {  // Helper function for debugging
   Enes100.print("Distance: ");
   Enes100.println(distance);
   Enes100.print("Current X: ");
@@ -239,9 +229,6 @@ int get_to_point(double target_x, double target_y) {
     cur_x = Enes100.location.x;
     cur_y = Enes100.location.y;
     distance = distance1(AtrigPin, AechoPin);
-    // print_stats();
-    // Enes100.print("Heading: ");
-    // Enes100.println(heading);
 
     if (cur_x > (target_x - tolerance) && cur_x < (target_x + tolerance) && cur_y > (target_y - tolerance) && cur_y < (target_y + tolerance)) {
       stop();
@@ -267,7 +254,7 @@ int get_to_point(double target_x, double target_y) {
 }
 
 // Specific Mission Phase Functions
-int get_to_site() {
+int get_to_site() {  // Copied get_to_point() function in the conditionals to allow changes to distance threshold and recalculation interval
   Enes100.updateLocation();
   cur_x = Enes100.location.x;
   cur_y = Enes100.location.y;
@@ -348,9 +335,6 @@ int get_to_site() {
       cur_x = Enes100.location.x;
       cur_y = Enes100.location.y;
       distance = distance1(AtrigPin, AechoPin);
-      print_stats();
-      Enes100.print("Heading: ");
-      Enes100.println(heading);
 
       if (cur_x > (target_x - tolerance) && cur_x < (target_x + tolerance) && cur_y > (target_y - tolerance) && cur_y < (target_y + tolerance)) {
         stop();
@@ -381,9 +365,8 @@ int get_to_destination() {
   Enes100.updateLocation();
   cur_x = Enes100.location.x;
   cur_y = Enes100.location.y;
-  // distance = distance1(AtrigPin, AechoPin);
 
-  backward();
+  backward();  // Back away from mission site
   delay(1000);
   stop();
 
