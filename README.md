@@ -1,4 +1,4 @@
 **Over-Terrain Vehicle Project - ENES100**
 
 This project is the main focus of ENES100, an introductory engineering design class at the University of Maryland. The final product was a fully functional, autonomously navigating vehicle that measures the depth of a sampling pool of water, tests the salinity of the water, and tests for the presence of dye before sending this data to a vision system that also facilitates navigation using ArUco markers. The structure and intended functionality of the OTV was fully designed and manufacturd by the members of the water mission team through laser cutting and 3D printing. This code is intended to be implemented using an Arduino Mega microcontroller and used along with the specific Enes100 C++ library. The Water_Code folder contains two source files and a header file. The map shows the reasoning behind the navigational code and gives some understanding of the mission.
-This code was authored primarily by me with help from groupmates: Liam Gaumont, Tyler Lumpkin, and Alyssa Rubenstein.
+This code was authored primarily by myself with help from groupmates: Liam Gaumont, Tyler Lumpkin, and Alyssa Rubenstein.
